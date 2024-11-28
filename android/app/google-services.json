@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "337720262131",
+    "project_id": "soulscript-81623",
+    "storage_bucket": "soulscript-81623.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:337720262131:android:1891c320122fcad8ad6686",
+        "android_client_info": {
+          "package_name": "com.SoulScript.crew"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCdsObplQjmBnHYU-NlsnlP7pDZrhnbwzY"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
