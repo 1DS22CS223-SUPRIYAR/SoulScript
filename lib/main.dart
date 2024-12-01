@@ -12,11 +12,11 @@ void main(){
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
 
-  // This widget is the root of your application.
+  // This widget is the root of the application.
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Flutter Demo',
+      title: 'SoulScript',
       theme: ThemeData(
         // Theme of the application
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.lightGreen),
@@ -30,7 +30,7 @@ class MyApp extends StatelessWidget {
 class MyHomePage extends StatefulWidget {
   const MyHomePage({super.key, required this.title});
 
-  // This widget is the home page of your application. It is stateful, meaning
+  // This widget is the home page of the application. It is stateful, meaning
   // that it has a State object (defined below) that contains fields that affect
   // how it looks.
 
@@ -46,16 +46,24 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
-  int _counter = 0;
+  bool signed_in = false;
+  String btn = "Sign In";
 
-  void _incrementCounter() {
+  void _update_status() {
     setState(() {
       // This call to setState tells the Flutter framework that something has
       // changed in this State, which causes it to rerun the build method below
       // so that the display can reflect the updated values. If we changed
       // _counter without calling setState(), then the build method would not be
       // called again, and so nothing would appear to happen.
-      _counter++;
+      if ((signed_in) == true) {
+        btn = 'Sign Out';
+        signed_in = false;
+      }
+      else{
+        btn = 'Sign In';
+        signed_in = true;
+      }
     });
   }
 
@@ -97,20 +105,21 @@ class _MyHomePageState extends State<MyHomePage> {
           mainAxisAlignment: MainAxisAlignment.center,
           children: <Widget>[
             const Text(
-              'You have pushed the button this many times:',
+              'Authentication',
             ),
             Text(
-              '$_counter',
+              '$signed_in',
               style: Theme.of(context).textTheme.headlineMedium,
+            ),
+            FloatingActionButton(
+              onPressed: _update_status,
+              tooltip: 'Sign In',
+              child: Text('$btn',),
             ),
           ],
         ),
       ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: _incrementCounter,
-        tooltip: 'Increment',
-        child: const Icon(Icons.add),
-      ), // This trailing comma makes auto-formatting nicer for build methods.
+      // This trailing comma makes auto-formatting nicer for build methods.
     );
   }
 }
