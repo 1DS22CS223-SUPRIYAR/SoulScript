@@ -12,7 +12,20 @@
           "package_name": "com.SoulScript.crew"
         }
       },
-      "oauth_client": [],
+      "oauth_client": [
+        {
+          "client_id": "337720262131-6uvmqhj0f5qht7828ndk1d00t17gc7n2.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.SoulScript.crew",
+            "certificate_hash": "ea8dcbbc275f274a8e0e84245adea247f3a30ed0"
+          }
+        },
+        {
+          "client_id": "337720262131-ocnq6rifl46p2afd5rakijit8qk4mjgb.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
       "api_key": [
         {
           "current_key": "AIzaSyCdsObplQjmBnHYU-NlsnlP7pDZrhnbwzY"
@@ -20,7 +33,19 @@
       ],
       "services": {
         "appinvite_service": {
-          "other_platform_oauth_client": []
+          "other_platform_oauth_client": [
+            {
+              "client_id": "337720262131-ocnq6rifl46p2afd5rakijit8qk4mjgb.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "337720262131-u7hi5fret5o5pe0rh3mq14gahjeptrcm.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.example.soulscript"
+              }
+            }
+          ]
         }
       }
     }

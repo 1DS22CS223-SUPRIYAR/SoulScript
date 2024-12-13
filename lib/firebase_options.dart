@@ -63,6 +63,8 @@ class DefaultFirebaseOptions {
     messagingSenderId: '337720262131',
     projectId: 'soulscript-81623',
     storageBucket: 'soulscript-81623.firebasestorage.app',
+    androidClientId: '337720262131-6uvmqhj0f5qht7828ndk1d00t17gc7n2.apps.googleusercontent.com',
+    iosClientId: '337720262131-u7hi5fret5o5pe0rh3mq14gahjeptrcm.apps.googleusercontent.com',
     iosBundleId: 'com.example.soulscript',
   );
 
