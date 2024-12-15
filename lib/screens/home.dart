@@ -3,7 +3,7 @@ import 'package:soulscript/main.dart';
 import 'package:table_calendar/table_calendar.dart'; // For calendar view
 import 'package:firebase_auth/firebase_auth.dart'; // For user authentication
 import 'package:soulscript/screens/editor_screen.dart';
-import 'package:soulscript/main.dart';// Import TextEditor
+import 'package:soulscript/main.dart';
 
 class HomeScreen extends StatefulWidget {
   @override
@@ -114,16 +114,6 @@ class _HomeScreenState extends State<HomeScreen> {
             headerStyle: HeaderStyle(
               formatButtonVisible: false,
               titleCentered: true,
-            ),
-          ),
-
-          // Placeholder for Journal Entries
-          Expanded(
-            child: Center(
-              child: Text(
-                'Select a date to view journal entries.',
-                style: TextStyle(fontSize: 16.0, color: Colors.grey),
-              ),
             ),
           ),
         ],
