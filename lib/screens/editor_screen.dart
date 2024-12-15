@@ -5,7 +5,9 @@ import 'package:image_picker/image_picker.dart';
 import 'package:flutter_quill/flutter_quill.dart' as quill;
 import 'dart:io';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:soulscript/services/database_service.dart';  // Ensure this is your correct database service import
+import 'package:soulscript/services/database_service.dart';
+import 'package:permission_handler/permission_handler.dart';
+
 
 class Editor extends StatefulWidget {
   @override
@@ -23,6 +25,10 @@ class _EditorState extends State<Editor> {
   bool _isListening = false;
   String _voiceInput = '';
 
+  Future<void> _requestPermissions() async {
+    await Permission.microphone.request();
+  }// Ensure this is your correct database service import
+
   FlutterTts _flutterTts = FlutterTts();
 
   // Labels for categorizing entries
@@ -31,6 +37,7 @@ class _EditorState extends State<Editor> {
   @override
   void initState() {
     super.initState();
+    _requestPermissions();
     _speech = stt.SpeechToText();
     _getUserUid();
   }
