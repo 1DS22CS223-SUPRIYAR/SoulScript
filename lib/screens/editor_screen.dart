@@ -7,9 +7,16 @@ import 'dart:io';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:soulscript/services/database_service.dart';
 import 'package:permission_handler/permission_handler.dart';
-
+import 'dart:convert';
+import 'dart:typed_data';
+import 'package:soulscript/screens/home.dart';
 
 class Editor extends StatefulWidget {
+  final String? entryId; // Pass the entryId to identify whether we are in compose or update mode.
+
+  // Constructor with entryId parameter
+  Editor({Key? key, this.entryId}) : super(key: key);
+
   @override
   _EditorState createState() => _EditorState();
 }
@@ -20,19 +27,14 @@ class _EditorState extends State<Editor> {
   Color _backgroundColor = Colors.deepPurple[50]!;
   String _selectedLabel = 'Personal';
   String? _uid;
-  // Speech-to-Text and Text-to-Speech objects
-  late stt.SpeechToText _speech;
+  String _title = '';
   bool _isListening = false;
   String _voiceInput = '';
-
-  Future<void> _requestPermissions() async {
-    await Permission.microphone.request();
-  }// Ensure this is your correct database service import
-
+  late stt.SpeechToText _speech;
   FlutterTts _flutterTts = FlutterTts();
-
-  // Labels for categorizing entries
   final List<String> _labels = ['Personal', 'Daily', 'Work', 'Ideas'];
+  String? _entryId; // To track the unique identifier for the entry.
+  DateTime? _createdAt; // To store the created timestamp.
 
   @override
   void initState() {
@@ -42,20 +44,14 @@ class _EditorState extends State<Editor> {
     _getUserUid();
   }
 
-  // Async method to get user UID
+  Future<void> _requestPermissions() async {
+    await Permission.microphone.request();
+  }
+
   Future<void> _getUserUid() async {
     try {
-      final user = FirebaseAuth.instance.currentUser;
-      if (user != null) {
-        setState(() {
-          _uid = user.uid;  // Assign UID when it's fetched
-        });
-      } else {
-        // Handle the case where the user is not logged in
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('User not logged in.')),
-        );
-      }
+      _uid = FirebaseAuth.instance.currentUser?.uid ?? '';
+
     } catch (e) {
       print('Error fetching user UID: $e');
       ScaffoldMessenger.of(context).showSnackBar(
@@ -64,6 +60,39 @@ class _EditorState extends State<Editor> {
     }
   }
 
+  Future<void> _loadExistingEntry() async {
+    try {
+      // Load the existing entry from the database using the entryId.
+      var entry = await DatabaseService().getJournalEntries(_entryId!);
+      if (entry != null && entry.isNotEmpty) {
+        setState(() {
+          _title = entry[0]['title'];
+          _selectedLabel = entry[0]['label'];
+          _createdAt = DateTime.parse(entry[0]['creation_date']);
+
+          // Convert base64 image strings into Uint8List for use with Image.memory
+          _attachedImages = [];
+          List<String> imageBase64Strings = entry[0]['image'].split(',');
+          for (var base64String in imageBase64Strings) {
+            // Decode base64 string into Uint8List
+            _attachedImages.add(base64Decode(base64String) as File); // Store as Uint8List
+          }
+
+          // Replace text content in Quill editor
+          _quillController.replaceText(
+            0, // Start replacing from the beginning
+            0, // Length of text to replace (0 means inserting)
+            entry[0]['content'], // The content you want to insert
+            TextSelection.collapsed(offset: 0), // TextSelection defines where the text is inserted
+            ignoreFocus: false, // Do not ignore the focus
+            shouldNotifyListeners: true, // Notify listeners about the change
+          );
+        });
+      }
+    } catch (e) {
+      print('Error loading entry: $e');
+    }
+  }
 
   Future<void> _startListening() async {
     bool available = await _speech.initialize();
@@ -81,7 +110,6 @@ class _EditorState extends State<Editor> {
       setState(() => _isListening = false);
     }
   }
-
 
   Future<void> _stopListening() async {
     setState(() => _isListening = false);
@@ -116,32 +144,61 @@ class _EditorState extends State<Editor> {
   }
 
   Future<void> _saveEntry() async {
-    if (_quillController.document.isEmpty()) {
+    // Validate title and content are not empty
+    if (_title.isEmpty || _quillController.document.isEmpty()) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Cannot save an empty entry.')),
+        SnackBar(content: Text('Title and content cannot be empty.')),
       );
       return;
     }
 
-    final content = _quillController.document.toDelta().toJson(); // Quill Delta as JSON
-    bool isSuccess = await DatabaseService().saveRichJournalEntry(
-      label: _selectedLabel,
-      content: content, // Pass Delta JSON to the function
-      imageUrls: _attachedImages.map((file) => file.path).toList(),
-      uid: _uid!, // Pass the user ID
-    );
+    final content = _quillController.document.toDelta().toJson();
+    List<String> base64ImageUrls = [];
 
-    if (isSuccess) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Entry saved successfully!')),
+    // Convert images to base64 and add them to the list
+    for (File image in _attachedImages) {
+      String base64Image = await DatabaseService().convertImageToBase64(image);
+      base64ImageUrls.add(base64Image);
+    }
+
+    // Set the current timestamp for creation
+    _createdAt = DateTime.now();
+
+    // Try to save or update the journal entry
+    try {
+      String contentJsonString = jsonEncode(content);
+      bool isSuccess = await DatabaseService().saveJournalEntry(
+        label: _selectedLabel,
+        content: contentJsonString,
+        base64Image: base64ImageUrls.join(','),
+        uid: _uid,
+        title: _title,
+        entryId: _entryId,
       );
-      _quillController.clear();
-      setState(() {
-        _attachedImages.clear();
-      });
-    } else {
+
+      if (isSuccess) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Entry saved successfully!')),
+        );
+        setState(() {
+          _attachedImages.clear();
+          _title = '';
+          _quillController.clear();
+        });
+
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => HomeScreen()), // Replace HomePage() with your home screen widget
+        );
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Failed to save entry.')),
+        );
+      }
+    } catch (e) {
+      print('Error saving entry: $e');
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Failed to save the entry.')),
+        SnackBar(content: Text('An error occurred while saving the entry.')),
       );
     }
   }
@@ -153,7 +210,7 @@ class _EditorState extends State<Editor> {
       appBar: AppBar(
         backgroundColor: Colors.deepPurple,
         title: Text(
-          'Journal Entry',
+          widget.entryId == null ? 'Journal Editor' : 'Update Journal Entry',
           style: TextStyle(color: Colors.white),
         ),
         iconTheme: IconThemeData(color: Colors.white),
@@ -169,17 +226,19 @@ class _EditorState extends State<Editor> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(
-              'Start your journal entry:',
-              style: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
-                color: Colors.black87,
+            TextField(
+              decoration: InputDecoration(
+                hintText: 'Enter a title for your entry',
+                border: OutlineInputBorder(),
               ),
+              controller: TextEditingController(text: _title),
+              onChanged: (value) {
+                setState(() {
+                  _title = value;
+                });
+              },
             ),
             SizedBox(height: 20),
-
-            // Label Selection
             Row(
               children: [
                 Text(
@@ -206,29 +265,23 @@ class _EditorState extends State<Editor> {
               ],
             ),
             SizedBox(height: 20),
-
-            // Quill editor wrapped inside Expanded/Flexible
             Expanded(
-              child: Flexible(
-                child: quill.QuillEditor(
-                  controller: _quillController,
-                  scrollController: ScrollController(),
-                  focusNode: FocusNode(),
-                  configurations: quill.QuillEditorConfigurations(
-                    scrollable: true,
-                    padding: EdgeInsets.all(8.0),
-                    autoFocus: true,
-                    placeholder: 'Start writing your journal...',
-                    checkBoxReadOnly: false,
-                    enableInteractiveSelection: true,
-                    enableSelectionToolbar: true,
-                    textCapitalization: TextCapitalization.sentences,
-                  ),
+              child: quill.QuillEditor(
+                controller: _quillController,
+                scrollController: ScrollController(),
+                focusNode: FocusNode(),
+                configurations: quill.QuillEditorConfigurations(
+                  scrollable: true,
+                  padding: EdgeInsets.all(8.0),
+                  autoFocus: true,
+                  placeholder: 'Start writing your journal...',
+                  checkBoxReadOnly: false,
+                  enableInteractiveSelection: true,
+                  enableSelectionToolbar: true,
+                  textCapitalization: TextCapitalization.sentences,
                 ),
               ),
             ),
-
-            // Attached Images Preview
             if (_attachedImages.isNotEmpty)
               Wrap(
                 spacing: 8.0,
@@ -258,8 +311,7 @@ class _EditorState extends State<Editor> {
                   );
                 }).toList(),
               ),
-
-            // Action Buttons Row
+            // Action Buttons
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
@@ -284,6 +336,7 @@ class _EditorState extends State<Editor> {
                 ),
               ],
             ),
+            SizedBox(height: 10),
           ],
         ),
       ),

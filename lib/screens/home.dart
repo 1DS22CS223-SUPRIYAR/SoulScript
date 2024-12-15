@@ -19,7 +19,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text('Journal App'),
+        title: Text('SoulScript'),
       ),
       drawer: Drawer(
         child: Column(
@@ -41,7 +41,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 Navigator.push(
                   context,
                   MaterialPageRoute(
-                    builder: (context) => Editor(),
+                    builder: (context) => Editor(entryId: null), // Pass entryId to the Editor page
                   ),
                 );
               },
@@ -66,12 +66,12 @@ class _HomeScreenState extends State<HomeScreen> {
             Divider(),
             ListTile(
               leading: Icon(Icons.self_improvement),
-              title: Text('Personal Growth'),
+              title: Text('Personal'),
               onTap: () => _showJournalsByTag('Personal Growth'),
             ),
             ListTile(
               leading: Icon(Icons.search_rounded),
-              title: Text('Research Insights'),
+              title: Text('Ideas'),
               onTap: () => _showJournalsByTag('Research Insights'),
             ),
             ListTile(
