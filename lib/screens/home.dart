@@ -4,6 +4,8 @@ import 'package:table_calendar/table_calendar.dart'; // For calendar view
 import 'package:firebase_auth/firebase_auth.dart'; // For user authentication
 import 'package:soulscript/screens/editor_screen.dart';
 import 'package:soulscript/main.dart';
+import 'package:soulscript/screens/journal_entries_screen.dart';
+import 'package:soulscript/screens/journal_entries_by_label_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   @override
@@ -41,7 +43,9 @@ class _HomeScreenState extends State<HomeScreen> {
                 Navigator.push(
                   context,
                   MaterialPageRoute(
-                    builder: (context) => Editor(entryId: null), // Pass entryId to the Editor page
+                    builder: (context) =>
+                        Editor(
+                            entryId: null), // Pass entryId to the Editor page
                   ),
                 );
               },
@@ -65,24 +69,24 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
             Divider(),
             ListTile(
-              leading: Icon(Icons.self_improvement),
+              leading: Icon(Icons.heart_broken_rounded),
               title: Text('Personal'),
-              onTap: () => _showJournalsByTag('Personal Growth'),
+              onTap: () => _showJournalsByTag(context, 'Personal'),
             ),
             ListTile(
               leading: Icon(Icons.search_rounded),
               title: Text('Ideas'),
-              onTap: () => _showJournalsByTag('Research Insights'),
+              onTap: () => _showJournalsByTag(context, 'Ideas'),
             ),
             ListTile(
               leading: Icon(Icons.edit),
-              title: Text('Creative Writing'),
-              onTap: () => _showJournalsByTag('Creative Writing'),
+              title: Text('Dialy'),
+              onTap: () => _showJournalsByTag(context, 'Daily'),
             ),
             ListTile(
               leading: Icon(Icons.travel_explore),
-              title: Text('Travel Experiences'),
-              onTap: () => _showJournalsByTag('Travel Experiences'),
+              title: Text('Travel'),
+              onTap: () => _showJournalsByTag(context, 'Travel'),
             ),
           ],
         ),
@@ -99,6 +103,14 @@ class _HomeScreenState extends State<HomeScreen> {
               setState(() {
                 _selectedDate = selectedDay;
               });
+              Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) =>
+                        JournalEntriesView(selectedDate: selectedDay),
+
+                  )
+              );
             },
             calendarStyle: CalendarStyle(
               todayDecoration: BoxDecoration(
@@ -121,22 +133,12 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  void _showJournalsByTag(String tag) {
-    // Mock implementation for displaying journals by tag
-    showDialog(
-      context: context,
-      builder: (context) {
-        return AlertDialog(
-          title: Text('$tag Journals'),
-          content: Text('Display journals tagged with $tag here.'),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(context),
-              child: Text('Close'),
-            ),
-          ],
-        );
-      },
+  void _showJournalsByTag(BuildContext context, String label) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => JournalEntriesByLabelView(label: label),
+      ),
     );
   }
 }
