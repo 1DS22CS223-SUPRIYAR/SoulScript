@@ -80,7 +80,7 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
             ListTile(
               leading: Icon(Icons.edit),
-              title: Text('Dialy'),
+              title: Text('Daily'),
               onTap: () => _showJournalsByTag(context, 'Daily'),
             ),
             ListTile(
@@ -88,44 +88,77 @@ class _HomeScreenState extends State<HomeScreen> {
               title: Text('Travel'),
               onTap: () => _showJournalsByTag(context, 'Travel'),
             ),
+            ListTile(
+              leading: Icon(Icons.laptop),
+              title: Text('Work'),
+              onTap: () => _showJournalsByTag(context, 'Work'),
+            ),
           ],
         ),
       ),
       body: Column(
         children: [
+          // Add a title or description
+          Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: Text(
+              'Select a Date',
+              style: TextStyle(
+                fontSize: 24,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ),
+
+          // Add some padding before the calendar
+          SizedBox(height: 16),
+
           // Calendar View
-          TableCalendar(
-            firstDay: DateTime.utc(2000, 1, 1),
-            lastDay: DateTime.utc(2100, 1, 1),
-            focusedDay: _selectedDate,
-            selectedDayPredicate: (day) => isSameDay(_selectedDate, day),
-            onDaySelected: (selectedDay, focusedDay) {
-              setState(() {
-                _selectedDate = selectedDay;
-              });
-              Navigator.push(
+          Expanded(
+            child: TableCalendar(
+              firstDay: DateTime.utc(2000, 1, 1),
+              lastDay: DateTime.utc(2100, 1, 1),
+              focusedDay: _selectedDate,
+              selectedDayPredicate: (day) => isSameDay(_selectedDate, day),
+              onDaySelected: (selectedDay, focusedDay) {
+                setState(() {
+                  _selectedDate = selectedDay;
+                });
+                Navigator.push(
                   context,
                   MaterialPageRoute(
                     builder: (context) =>
                         JournalEntriesView(selectedDate: selectedDay),
-
-                  )
-              );
-            },
-            calendarStyle: CalendarStyle(
-              todayDecoration: BoxDecoration(
-                color: Colors.blueAccent,
-                shape: BoxShape.circle,
+                  ),
+                );
+              },
+              calendarStyle: CalendarStyle(
+                todayDecoration: BoxDecoration(
+                  color: Colors.blueAccent,
+                  shape: BoxShape.circle,
+                ),
+                selectedDecoration: BoxDecoration(
+                  color: Colors.green,
+                  shape: BoxShape.circle,
+                ),
+                markersMaxCount: 1,
               ),
-              selectedDecoration: BoxDecoration(
-                color: Colors.green,
-                shape: BoxShape.circle,
+              headerStyle: HeaderStyle(
+                formatButtonVisible: false,
+                titleCentered: true,
               ),
-              markersMaxCount: 1,
             ),
-            headerStyle: HeaderStyle(
-              formatButtonVisible: false,
-              titleCentered: true,
+          ),
+
+          // Optional: Add additional content below the calendar
+          Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: Text(
+              'Choose a date to view your journal entries.',
+              style: TextStyle(
+                fontSize: 16,
+                color: Colors.grey,
+              ),
             ),
           ),
         ],

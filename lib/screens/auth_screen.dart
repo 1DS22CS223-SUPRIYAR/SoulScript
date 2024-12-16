@@ -1,9 +1,7 @@
-
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:soulscript/screens/google_sign_in_screen.dart';
-import 'package:soulscript/screens/github_sign_in_screen.dart';
-
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
 class AuthScreen extends StatelessWidget {
   @override
@@ -13,7 +11,7 @@ class AuthScreen extends StatelessWidget {
         child: Container(
           decoration: BoxDecoration(
             gradient: LinearGradient(
-              colors: [Colors.purple.shade200, Colors.deepPurple.shade500],
+              colors: [Colors.purple.shade200, Colors.purple.shade700], // Purple gradient
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
             ),
@@ -21,7 +19,15 @@ class AuthScreen extends StatelessWidget {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
+              // Logo image from the URL
+              Image.network(
+                'https://cdn-icons-png.flaticon.com/512/3135/3135704.png', // The image URL
+                height: 150, // Adjust height as needed
+                width: 150, // Adjust width as needed
+              ),
+              SizedBox(height: 40),
 
+              // App title
               Text(
                 'SoulScript',
                 style: GoogleFonts.pacifico(
@@ -45,10 +51,10 @@ class AuthScreen extends StatelessWidget {
               SizedBox(height: 40),
 
 
-              ElevatedButton(
+              ElevatedButton.icon(
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.white, // Background color of the button
-                  foregroundColor: Colors.deepPurple, // Text color of the button
+                  foregroundColor: Colors.purple.shade700, // Text color of the button
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(30),
                   ),
@@ -60,38 +66,16 @@ class AuthScreen extends StatelessWidget {
                     MaterialPageRoute(builder: (context) => GoogleSignInScreen()),
                   );
                 },
-                child: Text(
-                  'Sign In with Google',
+                icon: Icon(
+                  FontAwesomeIcons.google, // Google icon from FontAwesome
+                  color: Colors.purple.shade700,
+                ),
+                label: Text(
+                  'Sign Up / Sign In with Google',
                   style: GoogleFonts.poppins(
                     fontSize: 16,
                     fontWeight: FontWeight.w600,
-                    color: Colors.deepPurple,
-                  ),
-                ),
-              ),
-              SizedBox(height: 20),
-              // Sign Up Button
-              ElevatedButton(
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.white, // Background color of the button
-                  foregroundColor: Colors.deepPurple, // Text color of the button
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(30),
-                  ),
-                  padding: EdgeInsets.symmetric(horizontal: 40, vertical: 15),
-                ),
-                onPressed: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (context) => GitHubSignInScreen()),
-                  );
-                },
-                child: Text(
-                  'Sign In with GitHub',
-                  style: GoogleFonts.poppins(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w600,
-                    color: Colors.deepPurple,
+                    color: Colors.purple.shade700,
                   ),
                 ),
               ),
@@ -102,4 +86,3 @@ class AuthScreen extends StatelessWidget {
     );
   }
 }
-

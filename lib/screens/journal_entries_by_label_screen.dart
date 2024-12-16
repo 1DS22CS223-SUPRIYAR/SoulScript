@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart'; // Import Firebase Auth for current user
 import 'package:intl/intl.dart'; // For formatting dates
-import 'package:soulscript/screens/editor_screen.dart';
+import 'package:soulscript/screens/update_screnn.dart';
 
 class JournalEntriesByLabelView extends StatelessWidget {
   final String label;
@@ -15,7 +15,7 @@ class JournalEntriesByLabelView extends StatelessWidget {
 
     if (currentUser == null) {
       return Scaffold(
-        appBar: AppBar(title: Text("Journal Entries for Label: $label")),
+        appBar: AppBar(title: Text("Journal Entries")),
         body: Center(
           child: Text(
             "You need to log in to view your journal entries.",
@@ -29,19 +29,21 @@ class JournalEntriesByLabelView extends StatelessWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text("Journal Entries for Label: $label"),
+        title: Text("Journal Entries"),
+        backgroundColor: Colors.deepPurple, // Consistent app bar color
+        elevation: 0,
       ),
       body: Column(
         children: [
           // Cover Page with Label
           Container(
-            color: Colors.blueAccent,
+            color: Colors.deepPurple.shade200,
             padding: EdgeInsets.all(16.0),
             child: Center(
               child: Text(
                 "Entries with Label: $label",
                 style: TextStyle(
-                  fontSize: 24,
+                  fontSize: 26,
                   fontWeight: FontWeight.bold,
                   color: Colors.white,
                 ),
@@ -83,21 +85,27 @@ class JournalEntriesByLabelView extends StatelessWidget {
                     final lastUpdatedDate = lastUpdatedTimestamp?.toDate();
 
                     return Card(
-                      margin: EdgeInsets.all(8.0),
+                      margin: EdgeInsets.all(10.0),
+                      elevation: 5,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(15),
+                      ),
                       child: ListTile(
                         contentPadding: EdgeInsets.all(12.0),
                         title: Text(
                           entry['title'],
-                          style: TextStyle(fontSize: 18, fontWeight: FontWeight.w500),
+                          style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600, color: Colors.deepPurple),
                         ),
                         subtitle: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
                               "Created: ${DateFormat('d MMMM yyyy, hh:mm a').format(createdDate)}",
+                              style: TextStyle(color: Colors.deepPurple.shade300),
                             ),
                             Text(
                               "Last updated: ${lastUpdatedDate != null ? DateFormat('d MMMM yyyy, hh:mm a').format(lastUpdatedDate) : 'Unknown'}",
+                              style: TextStyle(color: Colors.deepPurple.shade300),
                             ),
                           ],
                         ),
@@ -119,7 +127,7 @@ class JournalEntriesByLabelView extends StatelessWidget {
                                 Navigator.push(
                                   context,
                                   MaterialPageRoute(
-                                    builder: (context) => Editor(entryId: entry.id),
+                                    builder: (context) => UpdateScreen(entryId: entry.id),
                                   ),
                                 );
                               },

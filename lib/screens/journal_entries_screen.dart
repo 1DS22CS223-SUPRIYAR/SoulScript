@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_auth/firebase_auth.dart'; // Import Firebase Auth for current user
 import 'package:intl/intl.dart'; // For formatting dates
-import 'package:soulscript/screens/editor_screen.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:soulscript/screens/update_screnn.dart';
 
 class JournalEntriesView extends StatelessWidget {
   final DateTime selectedDate;
@@ -15,9 +15,6 @@ class JournalEntriesView extends StatelessWidget {
 
     if (currentUser == null) {
       return Scaffold(
-        appBar: AppBar(
-          title: Text("Journal Entries for ${DateFormat('d MMMM yyyy').format(selectedDate)}"),
-        ),
         body: Center(
           child: Text(
             "You need to log in to view your journal entries.",
@@ -27,17 +24,18 @@ class JournalEntriesView extends StatelessWidget {
       );
     }
 
-    final userId = currentUser.uid; // Get the current user's ID
+    final userId = currentUser?.uid;
 
     return Scaffold(
       appBar: AppBar(
         title: Text("Journal Entries for ${DateFormat('d MMMM yyyy').format(selectedDate)}"),
+        backgroundColor: Colors.deepPurple, // Custom color for app bar
       ),
       body: Column(
         children: [
           // Cover Page with Selected Date
           Container(
-            color: Colors.purpleAccent,
+            color: Colors.deepPurpleAccent, // Updated color for the cover page
             padding: EdgeInsets.all(16.0),
             child: Center(
               child: Text(
@@ -56,7 +54,6 @@ class JournalEntriesView extends StatelessWidget {
             child: StreamBuilder<QuerySnapshot>(
               stream: FirebaseFirestore.instance
                   .collection('journal_entries')
-                  .where('uid', isEqualTo: userId) // Filter by the current user's ID
                   .where('creation_date', isGreaterThanOrEqualTo: Timestamp.fromDate(
                 DateTime(selectedDate.year, selectedDate.month, selectedDate.day),
               ))
@@ -77,7 +74,19 @@ class JournalEntriesView extends StatelessWidget {
                   );
                 }
 
-                final entries = snapshot.data!.docs;
+                final entries = snapshot.data!.docs.where((doc) {
+                  return doc['uid'] == userId; // Add the uid filter here
+                }).toList();
+
+                // If no entries match the uid filter
+                if (entries.isEmpty) {
+                  return Center(
+                    child: Text(
+                      "No entries found for this user.",
+                      style: TextStyle(fontSize: 18, color: Colors.grey),
+                    ),
+                  );
+                }
 
                 return ListView.builder(
                   itemCount: entries.length,
@@ -91,14 +100,25 @@ class JournalEntriesView extends StatelessWidget {
 
                     return Card(
                       margin: EdgeInsets.all(8.0),
+                      color: Colors.white, // Background color for each card
                       child: ListTile(
                         contentPadding: EdgeInsets.all(12.0),
                         title: Text(
                           entry['title'],
                           style: TextStyle(fontSize: 18, fontWeight: FontWeight.w500),
                         ),
-                        subtitle: Text(
-                          "Last updated: ${lastUpdatedDate != null ? DateFormat('d MMMM yyyy, hh:mm a').format(lastUpdatedDate) : 'Unknown'}",
+                        subtitle: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              "Created: ${DateFormat('d MMMM yyyy, hh:mm a').format(createdDate)}",
+                              style: TextStyle(fontSize: 14, color: Colors.black54),
+                            ),
+                            Text(
+                              "Last updated: ${lastUpdatedDate != null ? DateFormat('d MMMM yyyy, hh:mm a').format(lastUpdatedDate) : 'Unknown'}",
+                              style: TextStyle(fontSize: 14, color: Colors.black54),
+                            ),
+                          ],
                         ),
                         trailing: Row(
                           mainAxisSize: MainAxisSize.min,
@@ -118,7 +138,7 @@ class JournalEntriesView extends StatelessWidget {
                                 Navigator.push(
                                   context,
                                   MaterialPageRoute(
-                                    builder: (context) => Editor(entryId: entry.id),
+                                    builder: (context) => UpdateScreen(entryId: entry.id),
                                   ),
                                 );
                               },

@@ -61,20 +61,16 @@ class DatabaseService {
     required String title,
   }) async {
     try {
-      uid = uid ?? '';
+      uid = uid ?? ''; // Set uid to empty string if it's null
       if (entryId != null) {
         // If entryId is provided, it's an update
-        // Parse the entryId to milliseconds since it's expected to be a timestamp
-        DateTime entryDate = DateTime.fromMillisecondsSinceEpoch(int.parse(entryId));
+        // Query the 'journal_entries' collection in Firestore by the document ID
+        var journalEntryRef = FirebaseFirestore.instance.collection('journal_entries').doc(entryId);
 
-        // Query the 'journal_entries' collection in Firestore by the 'created_at' timestamp
-        QuerySnapshot<Map<String, dynamic>> snapshot = await FirebaseFirestore.instance
-            .collection('journal_entries')
-            .where('created_date', isEqualTo: entryDate)
-            .get();
-        if (snapshot.docs.isNotEmpty) {
-          var journalEntry = snapshot.docs.first;
-          await _db.collection('journal_entries').doc(journalEntry.id).update({
+        var docSnapshot = await journalEntryRef.get();
+        if (docSnapshot.exists) {
+          // If the entry exists, update it
+          await journalEntryRef.update({
             'label': label,
             'content': content,
             'images': base64Image,  // Update the base64 image here
@@ -82,18 +78,18 @@ class DatabaseService {
             'last_update': FieldValue.serverTimestamp(),  // Only update the last update timestamp
           });
           print("Journal entry updated with ID: $entryId");
+          return true;
         } else {
           // If the entry does not exist, create a new one
           await _createJournalEntry(label, content, base64Image, uid, title);
           print("Journal entry created with new ID.");
           return false;
         }
+      } else {
+        // If entryId is null, create a new journal entry
+        await _createJournalEntry(label, content, base64Image, uid, title);
+        print("Journal entry created with new ID.");
         return true;
-      }
-      else{
-        _createJournalEntry(label = label, content = content, base64Image = base64Image,uid = uid, title = title);
-        return true;
-
       }
     } catch (e) {
       print('Error in saveJournalEntry: $e');
@@ -133,20 +129,29 @@ class DatabaseService {
     return base64String;
   }
 
-  /// Retrieve journal entries for the user
-  Future<List<Map<String, dynamic>>> getJournalEntries(String uid) async {
+  Future<Map<String, dynamic>> getJournalEntry(String entryId) async {
     try {
-      QuerySnapshot snapshot = await _db.collection('journal_entries')
-          .where('uid', isEqualTo: uid)
+      // Retrieve the document from Firestore by its ID
+      DocumentSnapshot snapshot = await FirebaseFirestore.instance
+          .collection('journal_entries')
+          .doc(entryId)
           .get();
-      List<Map<String, dynamic>> journalEntries = [];
-      snapshot.docs.forEach((doc) {
-        journalEntries.add(doc.data() as Map<String, dynamic>);
-      });
-      return journalEntries;
+      // If the document exists, return the data
+      if (snapshot.exists) {
+        if (snapshot.exists) {
+          return snapshot.data() as Map<String, dynamic>;
+        } else {
+          print('No entry found with ID: $entryId');
+          return {};
+        }
+        return snapshot.data() as Map<String, dynamic>;
+      } else {
+        print('No entry found with ID: $entryId');
+        return {};
+      }
     } catch (e) {
-      print('Error retrieving journal entries: $e');
-      return [];
+      print('Error retrieving journal entry: $e');
+      return {};
     }
   }
 
